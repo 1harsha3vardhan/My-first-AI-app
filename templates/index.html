@@ -7,43 +7,63 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.8/purify.min.js"></script>
 </head>
 <body>
 
 <div class="crt-glow"></div>
 
-<main class="window">
-  <div class="titlebar">
-    <div class="dots">
-      <span class="dot dot-a"></span>
-      <span class="dot dot-b"></span>
-      <span class="dot dot-c"></span>
-    </div>
-    <div class="titlebar-label">~/my-first-ai-app — session_01</div>
-    <div class="titlebar-status" id="status">
-      <span class="status-dot"></span>connected
-    </div>
-  </div>
+<div class="app">
 
-  <div class="log" id="log">
-    <div class="log-line system">
-      <span class="tag">system</span>
-      <span class="text">Session started. Model: gemini-3.6-flash. Type a message below and press enter.</span>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-label">sessions</span>
+      <button class="new-chat-btn" id="newChatBtn" title="New chat">+ new</button>
     </div>
-  </div>
+    <div class="session-list" id="sessionList">
+      <!-- session items injected here -->
+    </div>
+    <div class="sidebar-footer">
+      <span class="footer-hint">local · saved to disk</span>
+    </div>
+  </aside>
 
-  <form class="prompt-bar" id="promptForm">
-    <span class="prompt-caret">&gt;</span>
-    <input
-      type="text"
-      id="promptInput"
-      placeholder="ask something..."
-      autocomplete="off"
-      autofocus
-    />
-    <button type="submit" class="send-btn" aria-label="Send">send</button>
-  </form>
-</main>
+  <main class="window">
+    <div class="titlebar">
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sessions">☰</button>
+      <div class="dots">
+        <span class="dot dot-a"></span>
+        <span class="dot dot-b"></span>
+        <span class="dot dot-c"></span>
+      </div>
+      <div class="titlebar-label" id="sessionTitle">~/my-first-ai-app — new chat</div>
+      <div class="titlebar-status" id="status">
+        <span class="status-dot"></span>connected
+      </div>
+    </div>
+
+    <div class="log" id="log">
+      <div class="log-line system">
+        <span class="tag">system</span>
+        <span class="text">Session started. Model: gemini-3.6-flash. Type a message below and press enter.</span>
+      </div>
+    </div>
+
+    <form class="prompt-bar" id="promptForm">
+      <span class="prompt-caret">&gt;</span>
+      <input
+        type="text"
+        id="promptInput"
+        placeholder="ask something..."
+        autocomplete="off"
+        autofocus
+      />
+      <button type="submit" class="send-btn" aria-label="Send">send</button>
+    </form>
+  </main>
+
+</div>
 
 <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

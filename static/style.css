@@ -2,11 +2,13 @@
   --bg:        #0a0d12;
   --surface:   #10141b;
   --surface-2: #161b24;
+  --surface-3: #1c222d;
   --border:    #232a35;
   --text:      #e4e7eb;
   --text-dim:  #6b7685;
   --amber:     #e8a33d;
   --amber-dim: #7a5a26;
+  --amber-glow: rgba(232, 163, 61, 0.1);
   --cyan:      #5ec8d8;
   --danger:    #d8695e;
 
@@ -36,7 +38,6 @@ body {
   overflow-x: hidden;
 }
 
-/* subtle ambient glow behind the window, evokes a CRT monitor */
 .crt-glow {
   position: fixed;
   top: 50%;
@@ -49,22 +50,158 @@ body {
   z-index: 0;
 }
 
-.window {
+.app {
   position: relative;
   z-index: 1;
+  display: flex;
   width: 100%;
-  max-width: 720px;
-  height: min(78vh, 640px);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  max-width: 960px;
+  height: min(80vh, 660px);
   border-radius: 10px;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
   box-shadow:
     0 0 0 1px rgba(0,0,0,0.4),
     0 20px 60px rgba(0,0,0,0.5),
     0 0 40px rgba(232, 163, 61, 0.05);
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--surface-2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 10px;
+  font-family: var(--mono);
+}
+
+.sidebar-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
+}
+
+.new-chat-btn {
+  background: transparent;
+  border: 1px solid var(--amber-dim);
+  color: var(--amber);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 9px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.new-chat-btn:hover {
+  background: var(--amber-glow);
+  border-color: var(--amber);
+}
+
+.session-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.session-list::-webkit-scrollbar {
+  width: 6px;
+}
+.session-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.session-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.session-item:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.session-item.active {
+  background: var(--surface-3);
+  color: var(--text);
+  box-shadow: inset 2px 0 0 var(--amber);
+}
+
+.session-item .title {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.session-item .delete-btn {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: opacity 0.12s ease, color 0.12s ease;
+}
+
+.session-item:hover .delete-btn {
+  opacity: 1;
+}
+
+.session-item .delete-btn:hover {
+  color: var(--danger);
+}
+
+.sidebar-footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.footer-hint {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.empty-sessions {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--text-dim);
+  padding: 12px 10px;
+  line-height: 1.5;
+}
+
+/* ---------- Window ---------- */
+.window {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
 }
 
 /* ---------- Title bar ---------- */
@@ -78,6 +215,16 @@ body {
   font-family: var(--mono);
   font-size: 12px;
   color: var(--text-dim);
+}
+
+.sidebar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
 }
 
 .dots {
@@ -191,14 +338,57 @@ body {
 .text {
   color: var(--text);
   font-family: var(--sans);
-  white-space: pre-wrap;
   word-break: break-word;
+  min-width: 0;
 }
 
 .log-line.system .text {
   color: var(--text-dim);
   font-family: var(--mono);
   font-size: 12.5px;
+}
+
+/* ---------- Markdown content rendered inside AI replies ---------- */
+.text p {
+  margin: 0 0 10px;
+}
+.text p:last-child {
+  margin-bottom: 0;
+}
+.text strong {
+  color: #fff;
+  font-weight: 600;
+}
+.text ul, .text ol {
+  margin: 6px 0 10px;
+  padding-left: 20px;
+}
+.text li {
+  margin-bottom: 4px;
+}
+.text code {
+  font-family: var(--mono);
+  background: var(--surface-3);
+  color: var(--amber);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+.text pre {
+  background: #0d1017;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  margin: 8px 0 12px;
+}
+.text pre code {
+  background: none;
+  color: var(--text);
+  padding: 0;
+}
+.text a {
+  color: var(--cyan);
 }
 
 /* blinking cursor shown while waiting for a reply */
@@ -250,6 +440,10 @@ body {
   color: var(--text-dim);
 }
 
+#promptInput:disabled {
+  opacity: 0.5;
+}
+
 .send-btn {
   background: var(--amber-dim);
   color: #1a1206;
@@ -274,19 +468,35 @@ body {
 }
 
 .send-btn:focus-visible,
-#promptInput:focus-visible {
+#promptInput:focus-visible,
+.new-chat-btn:focus-visible,
+.session-item:focus-visible {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 560px) {
+@media (max-width: 720px) {
   body { padding: 0; }
-  .window {
+  .app {
     height: 100vh;
     max-width: 100%;
     border-radius: 0;
-    border: none;
+  }
+  .sidebar-toggle {
+    display: inline-block;
+  }
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 240px;
+    z-index: 10;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 20px 0 40px rgba(0,0,0,0.5);
   }
 }
 
@@ -297,5 +507,8 @@ body {
   }
   .log-line {
     animation: none;
+  }
+  .sidebar {
+    transition: none;
   }
 }
